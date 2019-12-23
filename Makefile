@@ -27,19 +27,19 @@ preprocess:
 	docker run --rm -v ${PWD}:/app -w /app ${DOCKER_NAME}:latest python preprocess.py --input_file data/rap.txt --output_file data/out.txt --model /usr/local/libexec/jumanpp/jumandic.jppmdl
 
 train:
-	python ./bert_mouth.py \
+	python ./webapp/bert_mouth.py \
 		--bert_model ./Japanese_L-12_H-768_A-12_E-30_BPE_transformers/ \
 		--output_dir ./models \
-		--train_file tmp/train.txt \
-		--valid_file tmp/valid.txt \
+		--train_file data/train.txt \
+		--valid_file data/valid.txt \
 		--max_seq_length 128 \
 		--do_train \
 		--train_batch_size 10 \
 		--num_train_epochs 100
 
 generate:
-	docker run --rm -v ${PWD}:/app -w /app jumanpp2:latest python ./bert_mouth.py \
-		--bert_model ./rap_single_lines_model \
+	docker run --rm -v ${PWD}:/app -w /app ${DOCKER_NAME}:latest python ./webapp/bert_mouth.py \
+		--bert_model ./webapp/rap_bert_model \
 		--do_generate \
 		--seq_length 20 \
 		--max_iter 20
