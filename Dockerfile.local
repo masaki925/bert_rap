@@ -1,0 +1,44 @@
+FROM pytorch/pytorch:latest
+
+USER root
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    build-essential cmake libboost-all-dev google-perftools libgoogle-perftools-dev wget unzip locales
+
+RUN echo "ja_JP UTF-8" > /etc/locale.gen
+RUN locale-gen
+
+ENV LC_ALL=ja_JP.UTF-8
+ENV LANG=ja_JP.UTF-8
+ENV LANGUAGE=ja_JP.UTF-8
+
+ENV PYTHONIOENCODING=utf-8
+
+WORKDIR /tmp
+
+ADD ./Japanese_L-12_H-768_A-12_E-30_BPE_WWM_transformers.zip /tmp/
+RUN unzip Japanese_L-12_H-768_A-12_E-30_BPE_WWM_transformers.zip
+
+COPY ./jumanpp-2.0.0-rc3.tar.xz /tmp/
+RUN tar xJvf jumanpp-2.0.0-rc3.tar.xz && \
+     cd jumanpp-2.0.0-rc3/ && \
+     mkdir bld && cd bld && \
+     cmake .. && \
+     make install
+
+RUN pip install transformers==2.1.1 pyknp mojimoji tensorflow==1.14
+
+ADD ./webapp/requirements.txt /tmp/requirements.txt
+
+# Install dependencies
+RUN pip install --no-cache-dir -q -r /tmp/requirements.txt
+
+ADD ./webapp /opt/webapp/
+WORKDIR /opt/webapp
+
+EXPOSE 5000
+
+RUN adduser myuser
+USER myuser
+
+CMD gunicorn --bind 0.0.0.0:5000 --timeout 900 --workers 2 app:app
+

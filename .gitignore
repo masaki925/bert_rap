@@ -1,0 +1,6 @@
+.swp
+__pycache__
+*.zip
+*.tar.xz
+webapp/rap_bert_model/*
+!/**/.gitkeep
